@@ -1,4 +1,4 @@
-@RinhaBackend2024.API_HostAddress = http://localhost:9999
+@RinhaBackend2024.API_HostAddress = https://localhost:7196
 
 POST {{RinhaBackend2024.API_HostAddress}}/clientes/1/transacoes
 Accept: application/json

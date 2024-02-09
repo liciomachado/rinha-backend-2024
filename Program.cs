@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using RinhaBackend2024.Data;
 using RinhaBackend2024.Domain;
 
@@ -9,12 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
-builder.Services.AddDbContext<DataContext>(options => options
-.UseNpgsql(configuration.GetConnectionString("postgress"), x =>
-{
-    x.EnableRetryOnFailure(5, TimeSpan.FromSeconds(3), null);
-}
-));
+builder.Services.AddNpgsqlDataSource(configuration.GetConnectionString("postgress")!);
 
 var app = builder.Build();
 app.UseSwagger();

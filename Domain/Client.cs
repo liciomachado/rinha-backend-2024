@@ -66,4 +66,9 @@ public class Client
     {
         Transations.Add(new Transaction(value, type, description));
     }
+
+    public void SetTransactions(List<Transaction> transations)
+    {
+        Transations = transations;
+    }
 }
