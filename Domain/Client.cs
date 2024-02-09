@@ -36,7 +36,8 @@ public class Client
     public bool CreateTransaction(long value, string type, string description)
     {
         if (!validOperation.Contains(type.ToLower())) return false;
-        if (description.Length > 10) return false;
+        int sizeDescription = description.Trim().Length;
+        if (sizeDescription <= 0 && sizeDescription > 10) return false;
 
         if (type == "c")
             return Credit(value, description);
