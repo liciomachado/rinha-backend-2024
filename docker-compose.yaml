@@ -14,11 +14,11 @@ services:
         - db
         ports:
         - "8081:8080"
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.25"
-                    memory: "75MB"
+        # deploy:
+        #     resources:
+        #         limits:
+        #             cpus: "0.25"
+        #             memory: "75MB"
 
     api02:
         <<: *api 
@@ -45,11 +45,11 @@ services:
         - ./Configs/script.sql:/docker-entrypoint-initdb.d/script.sql
         - ./Configs/postgres.conf:/etc/postgresql/postgresql.conf
         command: postgres -c config_file=/etc/postgresql/postgresql.conf
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.9"
-                    memory: "350MB"
+        # deploy:
+        #     resources:
+        #         limits:
+        #             cpus: "0.9"
+        #             memory: "350MB"
 
     nginx:
         image: nginx:latest

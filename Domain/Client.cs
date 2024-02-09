@@ -37,7 +37,7 @@ public class Client
     {
         if (!validOperation.Contains(type.ToLower())) return false;
         int sizeDescription = description.Trim().Length;
-        if (sizeDescription <= 0 && sizeDescription > 10) return false;
+        if (sizeDescription == 0 || sizeDescription > 10) return false;
 
         if (type == "c")
             return Credit(value, description);

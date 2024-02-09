@@ -11,6 +11,8 @@ namespace RinhaBackend2024.Controllers
         [HttpPost("{id}/transacoes")]
         public async Task<IActionResult> DoTransation(int id, TransactionDtoRequest transactionDTO)
         {
+            if (!ModelState.IsValid) return UnprocessableEntity();
+
             var client = await _clientRepository.GetAsync(id);
             if (client == null) return NotFound();
 

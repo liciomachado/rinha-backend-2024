@@ -33,6 +33,7 @@ public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
     public async Task<Client> GetWithTransactionAsync(int id)
     {
         var client = await GetAsync(id);
+        if (client == null) return null;
         var transaction = await GetTransactionsByClientId(id);
         client.SetTransactions(transaction);
         return client;
