@@ -10,4 +10,4 @@ Content-Type: application/json
     "descricao" : "descricao"
 }
 ###
-GET {{RinhaBackend2024.API_HostAddress}}/clientes/1/transacoes
+GET {{RinhaBackend2024.API_HostAddress}}/clientes/1/extrato

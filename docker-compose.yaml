@@ -37,7 +37,7 @@ services:
         ports:
         - "5433:5432"
         volumes:
-        - ./Migrations/script.sql:/docker-entrypoint-initdb.d/seu-script.sql
+        - ./Migrations/script.sql:/docker-entrypoint-initdb.d/script.sql
         healthcheck:
             test: ["CMD-SHELL", "pg_isready"]
             interval: 1s

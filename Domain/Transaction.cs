@@ -9,6 +9,7 @@ public class Transaction(long value, string type, string description)
 {
     [Key]
     [Column("id")]
+    [JsonIgnore]
     public long Id { get; set; }
     [Column("value")]
     [JsonPropertyName("valor")]

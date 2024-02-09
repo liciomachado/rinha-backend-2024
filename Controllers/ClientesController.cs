@@ -21,7 +21,7 @@ namespace RinhaBackend2024.Controllers
             return Ok(new TransactionDtoResponse(client.Limit, client.Balance));
         }
 
-        [HttpGet("{id}/transacoes")]
+        [HttpGet("{id}/extrato")]
         public async Task<IActionResult> GetTransationByClient(int id)
         {
             var client = await _clientRepository.GetWithTransactionAsync(id);
