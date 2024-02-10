@@ -10,13 +10,11 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddSingleton<IClientRepository, ClientRepository>();
 builder.Services.AddNpgsqlDataSource(configuration.GetConnectionString("postgress")!);
 
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
-app.UseAuthorization();
 app.MapControllers();
 app.Run();
