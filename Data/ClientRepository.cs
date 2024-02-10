@@ -68,7 +68,7 @@ public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
         cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, client.Balance);
         await cmd.ExecuteNonQueryAsync();
 
-        foreach (var item in client.Transations) //ignorando casos de update de transacoes
+        foreach (var item in client.Transactions) //ignorando casos de update de transacoes
         {
             await AddTransaction(item, client.Id);
         }

@@ -1,23 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Serialization;
 
 namespace RinhaBackend2024.Domain;
 
-[Table("clients", Schema = "public")]
 public class Client
 {
     private readonly string[] validOperation = ["c", "d"];
 
-    [Key]
-    [Column("id")]
+    [BsonId]
+    [BsonRepresentation(BsonType.Int64)]
     [JsonIgnore]
     public long Id { get; private set; }
-    [Column("limit")]
+    [BsonElement("limit")]
     public long Limit { get; private set; }
-    [Column("balance")]
+
+    [BsonElement("balance")]
     public long Balance { get; private set; }
-    public List<Transaction> Transations { get; private set; } = [];
+    [BsonElement("transations")]
+    public List<Transaction> Transactions { get; private set; } = [];
 
     public Client(long limit)
     {
@@ -64,11 +65,11 @@ public class Client
 
     private void AddNewTransaction(long value, string type, string description)
     {
-        Transations.Add(new Transaction(value, type, description));
+        Transactions.Add(new Transaction(value, type, description));
     }
 
     public void SetTransactions(List<Transaction> transations)
     {
-        Transations = transations;
+        Transactions = transations;
     }
 }

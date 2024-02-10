@@ -38,7 +38,7 @@ namespace RinhaBackend2024.Controllers
                     Total = client.Balance,
 
                 },
-                UltimasTransacoes = [.. client.Transations.OrderByDescending(x => x.Id).Take(10)]
+                UltimasTransacoes = [.. client.Transactions.OrderByDescending(x => x.Realized).Take(10)]
             };
 
             return Ok(clientDataDto);
