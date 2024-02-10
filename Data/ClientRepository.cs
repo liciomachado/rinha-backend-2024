@@ -42,7 +42,7 @@ public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
     private async Task<List<Transaction>> GetTransactionsByClientId(long clientId)
     {
         var cmd = _connection.CreateCommand();
-        cmd.CommandText = """SELECT "id", "value", "type", "description", "realized", "ClientId" FROM public."transaction" WHERE "ClientId" = @clientId ORDER BY "id" DESC""";
+        cmd.CommandText = """SELECT "id", "value", "type", "description", "realized", "ClientId" FROM public."transaction" WHERE "ClientId" = @clientId ORDER BY "id" DESC LIMIT 10""";
         cmd.Parameters.AddWithValue("clientId", clientId);
         await using var reader = await cmd.ExecuteReaderAsync();
         var resultados = new List<Transaction>();
