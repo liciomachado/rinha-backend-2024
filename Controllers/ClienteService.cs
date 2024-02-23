@@ -1,33 +1,31 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RinhaBackend2024.Application.DTOs;
+using RinhaBackend2024.Application;
 using RinhaBackend2024.Domain;
 
 namespace RinhaBackend2024.Controllers
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class ClientesController([FromServices] IClientRepository _clientRepository) : ControllerBase
+    public class ClienteService([FromServices] IClientRepository _clientRepository)
     {
-        [HttpPost("{id}/transacoes")]
-        public async Task<IActionResult> DoTransation(int id, TransactionDtoRequest transactionDTO)
+        public async Task<IResult> DoTransation(int id, TransactionDtoRequest transactionDTO)
         {
-            if (!ModelState.IsValid) return UnprocessableEntity();
+            //if (!ModelState.IsValid) return Results.UnprocessableEntity();
+            if (transactionDTO.Description!.Length < 1 || transactionDTO.Description!.Length <= 10)
+                Results.UnprocessableEntity();
 
             var client = await _clientRepository.GetAsync(id);
-            if (client == null) return NotFound();
+            if (client == null) return Results.NotFound();
 
             var isOperationValid = client.CreateTransaction(transactionDTO.Value, transactionDTO.Type, transactionDTO.Description);
             await _clientRepository.UpdateAsync(client);
-            if (!isOperationValid) return UnprocessableEntity();
+            if (!isOperationValid) return Results.UnprocessableEntity();
 
-            return Ok(new TransactionDtoResponse(client.Limit, client.Balance));
+            return Results.Ok(new TransactionDtoResponse(client.Limit, client.Balance));
         }
 
-        [HttpGet("{id}/extrato")]
-        public async Task<IActionResult> GetTransationByClient(int id)
+        public async Task<IResult> GetTransationByClient(int id)
         {
             var client = await _clientRepository.GetWithTransactionAsync(id);
-            if (client == null) return NotFound();
+            if (client == null) return Results.NotFound();
 
             ClientDataDtoResponse clientDataDto = new()
             {
@@ -41,7 +39,7 @@ namespace RinhaBackend2024.Controllers
                 UltimasTransacoes = [.. client.Transations.OrderByDescending(x => x.Id).Take(10)]
             };
 
-            return Ok(clientDataDto);
+            return Results.Ok(clientDataDto);
         }
     }
 }

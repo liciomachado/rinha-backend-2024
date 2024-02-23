@@ -1,20 +1,29 @@
+using Microsoft.AspNetCore.Mvc;
+using RinhaBackend2024.Application;
+using RinhaBackend2024.Controllers;
 using RinhaBackend2024.Data;
 using RinhaBackend2024.Domain;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 var configuration = builder.Configuration;
-
-builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SuppressModelStateInvalidFilter = true;
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IClientRepository, ClientRepository>();
+builder.Services.AddSingleton<ClienteService>();
 builder.Services.AddNpgsqlDataSource(configuration.GetConnectionString("postgress")!);
 
 var app = builder.Build();
-app.UseSwagger();
-app.UseSwaggerUI();
-app.MapControllers();
+app.MapPost("/clientes/{id}/transacoes",
+   async ([FromRoute] int id, [FromBody] TransactionDtoRequest transacaoRequest, [FromServices] ClienteService clientesService) =>
+   {
+       return await clientesService.DoTransation(id, transacaoRequest);
+   });
+
+app.MapGet("/clientes/{id}/extrato",
+    async ([FromRoute] int id, [FromServices] ClienteService clientesService) =>
+    {
+        return await clientesService.GetTransationByClient(id);
+    });
 app.Run();
