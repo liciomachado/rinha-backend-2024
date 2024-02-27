@@ -9,15 +9,16 @@ namespace RinhaBackend2024.Controllers
         public async Task<IResult> DoTransation(int id, TransactionDtoRequest transactionDTO)
         {
             //if (!ModelState.IsValid) return Results.UnprocessableEntity();
-            if (transactionDTO.Description!.Length < 1 || transactionDTO.Description!.Length <= 10)
-                Results.UnprocessableEntity();
+            if (transactionDTO.Description == null || transactionDTO.Description!.Length < 1 || transactionDTO.Description!.Length > 10)
+                return Results.UnprocessableEntity();
 
-            var client = await _clientRepository.GetAsync(id);
+            var client = await _clientRepository.GetAsyncLock(id);
             if (client == null) return Results.NotFound();
 
             var isOperationValid = client.CreateTransaction(transactionDTO.Value, transactionDTO.Type, transactionDTO.Description);
-            await _clientRepository.UpdateAsync(client);
             if (!isOperationValid) return Results.UnprocessableEntity();
+
+            await _clientRepository.UpdateAsync(client);
 
             return Results.Ok(new TransactionDtoResponse(client.Limit, client.Balance));
         }

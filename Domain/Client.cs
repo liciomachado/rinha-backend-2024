@@ -1,21 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace RinhaBackend2024.Domain;
 
-[Table("clients", Schema = "public")]
 public class Client
 {
     private readonly string[] validOperation = ["c", "d"];
 
-    [Key]
-    [Column("id")]
     [JsonIgnore]
     public long Id { get; private set; }
-    [Column("limit")]
     public long Limit { get; private set; }
-    [Column("balance")]
     public long Balance { get; private set; }
     public List<Transaction> Transations { get; private set; } = [];
 
