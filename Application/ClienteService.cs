@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RinhaBackend2024.Application;
 using RinhaBackend2024.Domain;
 
-namespace RinhaBackend2024.Controllers
+namespace RinhaBackend2024.Application
 {
     public class ClienteService([FromServices] IClientRepository _clientRepository)
     {
         public async Task<IResult> DoTransation(int id, TransactionDtoRequest transactionDTO)
         {
-            //if (!ModelState.IsValid) return Results.UnprocessableEntity();
             if (transactionDTO.Description == null || transactionDTO.Description!.Length < 1 || transactionDTO.Description!.Length > 10)
                 return Results.UnprocessableEntity();
 

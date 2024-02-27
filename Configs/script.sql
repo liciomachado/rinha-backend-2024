@@ -6,10 +6,10 @@
  
 CREATE TABLE public.transaction (
     id SERIAL PRIMARY KEY,
-    value bigint NOT NULL,
-    type text NOT NULL,
-    description text NOT NULL,
-    realized timestamp with time zone NOT NULL,
+    value INTEGER NOT NULL,
+    type CHAR(1) NOT NULL,
+    description VARCHAR(10) NOT NULL,
+    realized TIMESTAMP NOT NULL DEFAULT NOW(),
     "ClientId" INTEGER,
     CONSTRAINT "FK_transaction_clients_ClientId" FOREIGN KEY ("ClientId") REFERENCES public.clients (id)
 );

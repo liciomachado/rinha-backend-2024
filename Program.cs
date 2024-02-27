@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using RinhaBackend2024.Application;
-using RinhaBackend2024.Controllers;
 using RinhaBackend2024.Data;
 using RinhaBackend2024.Domain;
 
@@ -10,10 +9,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
-builder.Services.AddSingleton<IContextConnection>(new ContextConnection(configuration));
-builder.Services.AddSingleton<IClientRepository, ClientRepositoryMongo>();
+builder.Services.AddSingleton<IClientRepository, ClientRepositoryADO>();
 builder.Services.AddSingleton<ClienteService>();
-//builder.Services.AddNpgsqlDataSource(configuration.GetConnectionString("postgress")!);
+builder.Services.AddNpgsqlDataSource(configuration.GetConnectionString("postgress")!);
 
 var app = builder.Build();
 app.MapPost("/clientes/{id}/transacoes",

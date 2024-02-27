@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Npgsql;
 using RinhaBackend2024.Domain;
 
 namespace RinhaBackend2024.Data;
@@ -6,6 +7,8 @@ namespace RinhaBackend2024.Data;
 public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepository
 {
     private readonly NpgsqlDataSource _connection = connection;
+    private readonly IMemoryCache _memoryCache;
+
 
     public async Task<Client> GetAsyncLock(int id)
     {
