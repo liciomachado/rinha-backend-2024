@@ -3,7 +3,7 @@ using RinhaBackend2024.Domain;
 
 namespace RinhaBackend2024.Data;
 
-public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
+public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepository
 {
     private readonly NpgsqlDataSource _connection = connection;
 
@@ -68,7 +68,7 @@ public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
         cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, client.Balance);
         await cmd.ExecuteNonQueryAsync();
 
-        foreach (var transaction in client.Transations) //ignorando casos de update de transacoes
+        foreach (var transaction in client.Transactions) //ignorando casos de update de transacoes
         {
             cmd.CommandText = """INSERT INTO public."transaction" ("value", "type", "description", "realized", "ClientId") VALUES (@value, @type, @description, @realized, @clientId)""";
             cmd.Parameters.AddWithValue("value", NpgsqlTypes.NpgsqlDbType.Integer, transaction.Value);

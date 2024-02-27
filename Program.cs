@@ -10,9 +10,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
-builder.Services.AddSingleton<IClientRepository, ClientRepository>();
+builder.Services.AddSingleton<IContextConnection>(new ContextConnection(configuration));
+builder.Services.AddSingleton<IClientRepository, ClientRepositoryMongo>();
 builder.Services.AddSingleton<ClienteService>();
-builder.Services.AddNpgsqlDataSource(configuration.GetConnectionString("postgress")!);
+//builder.Services.AddNpgsqlDataSource(configuration.GetConnectionString("postgress")!);
 
 var app = builder.Build();
 app.MapPost("/clientes/{id}/transacoes",

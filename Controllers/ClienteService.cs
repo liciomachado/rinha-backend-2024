@@ -12,7 +12,7 @@ namespace RinhaBackend2024.Controllers
             if (transactionDTO.Description == null || transactionDTO.Description!.Length < 1 || transactionDTO.Description!.Length > 10)
                 return Results.UnprocessableEntity();
 
-            var client = await _clientRepository.GetAsyncLock(id);
+            var client = await _clientRepository.GetAsync(id);
             if (client == null) return Results.NotFound();
 
             var isOperationValid = client.CreateTransaction(transactionDTO.Value, transactionDTO.Type, transactionDTO.Description);
@@ -37,7 +37,7 @@ namespace RinhaBackend2024.Controllers
                     Total = client.Balance,
 
                 },
-                UltimasTransacoes = [.. client.Transations.OrderByDescending(x => x.Id).Take(10)]
+                UltimasTransacoes = [.. client.Transactions.OrderByDescending(x => x.Id).Take(10)]
             };
 
             return Results.Ok(clientDataDto);
