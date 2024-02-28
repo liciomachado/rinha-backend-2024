@@ -3,7 +3,7 @@ using RinhaBackend2024.Domain;
 
 namespace RinhaBackend2024.Data;
 
-public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
+public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepository
 {
     private readonly NpgsqlDataSource _connection = connection;
 
@@ -13,7 +13,7 @@ public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
         cmd.CommandText = """SELECT id, "limit", balance FROM public.clients WHERE Id = @Id""";
         cmd.Parameters.AddWithValue("Id", id);
         await using var reader = await cmd.ExecuteReaderAsync();
-        if (reader.Read())
+        if (await reader.ReadAsync())
         {
             var client = new Client(reader.GetInt64(0), reader.GetInt64(1), reader.GetInt64(2));
             return client;
@@ -26,7 +26,7 @@ public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
         var client = await GetAsync(id);
         if (client == null) return null;
         var transaction = await GetTransactionsByClientId(id);
-        client.SetTransactions(transaction);
+        client.Transactions = transaction;
         return client;
     }
 
@@ -45,32 +45,34 @@ public class ClientRepository(NpgsqlDataSource connection) : IClientRepository
         return resultados;
     }
 
-    private async Task<Transaction> AddTransaction(Transaction transaction, long clientId)
+    public async Task<bool> UpdateAsync(Client client, string type)
     {
+        bool isCredit = type.Equals("c", StringComparison.CurrentCultureIgnoreCase);
+        var value = client.Transactions[0].Value;
         using var cmd = _connection.CreateCommand();
+        if (isCredit)
+            cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" + @balance WHERE "id" = @id RETURNING  "balance" """;
+        else
+            cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" - @balance WHERE "id" = @id AND ( "limit" + "balance" - @balance) >= 0 RETURNING "balance" """;
+        cmd.Parameters.AddWithValue("id", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
+        cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, value);
+        var result = await cmd.ExecuteScalarAsync();
+
+        if (result != null)
+            client.Balance = Convert.ToInt64(result);
+        else
+            return false;
+
+        var transaction = client.Transactions[0];
         cmd.CommandText = """INSERT INTO public."transaction" ("value", "type", "description", "realized", "ClientId") VALUES (@value, @type, @description, @realized, @clientId)""";
         cmd.Parameters.AddWithValue("value", NpgsqlTypes.NpgsqlDbType.Integer, transaction.Value);
         cmd.Parameters.AddWithValue("type", NpgsqlTypes.NpgsqlDbType.Text, transaction.Type);
         cmd.Parameters.AddWithValue("description", NpgsqlTypes.NpgsqlDbType.Text, transaction.Description);
         cmd.Parameters.AddWithValue("realized", NpgsqlTypes.NpgsqlDbType.Timestamp, transaction.Realized);
-        cmd.Parameters.AddWithValue("clientId", NpgsqlTypes.NpgsqlDbType.Integer, clientId);
+        cmd.Parameters.AddWithValue("clientId", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
         var id = await cmd.ExecuteNonQueryAsync();
         transaction.Id = id;
-        return transaction;
-    }
 
-    public async Task UpdateAsync(Client client)
-    {
-        using var cmd = _connection.CreateCommand();
-        cmd.CommandText = """UPDATE public.clients SET "limit" = @limit, "balance" = @balance WHERE "id" = @id""";
-        cmd.Parameters.AddWithValue("id", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
-        cmd.Parameters.AddWithValue("limit", NpgsqlTypes.NpgsqlDbType.Integer, client.Limit);
-        cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, client.Balance);
-        await cmd.ExecuteNonQueryAsync();
-
-        foreach (var item in client.Transations) //ignorando casos de update de transacoes
-        {
-            await AddTransaction(item, client.Id);
-        }
+        return true;
     }
 }

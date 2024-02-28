@@ -1,18 +1,21 @@
  CREATE TABLE public.clients (
      id SERIAL PRIMARY KEY,
-     "limit" bigint NOT NULL,
-     balance bigint NOT NULL
+     "limit" INTEGER NOT NULL,
+     balance INTEGER NOT NULL
  );
  
 CREATE TABLE public.transaction (
     id SERIAL PRIMARY KEY,
-    value bigint NOT NULL,
-    type text NOT NULL,
-    description text NOT NULL,
-    realized timestamp with time zone NOT NULL,
-    "ClientId" bigint,
+    value INTEGER NOT NULL,
+    type CHAR(1) NOT NULL,
+    description VARCHAR(10) NOT NULL,
+    realized TIMESTAMP NOT NULL DEFAULT NOW(),
+    "ClientId" INTEGER,
     CONSTRAINT "FK_transaction_clients_ClientId" FOREIGN KEY ("ClientId") REFERENCES public.clients (id)
 );
+
+CREATE INDEX ids_transaction_ids_client_id ON public.transaction ("ClientId");
+
 
 INSERT INTO public.clients (id, balance, "limit")
 VALUES (1, 0, 100000);

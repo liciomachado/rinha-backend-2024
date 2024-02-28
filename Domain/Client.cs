@@ -1,23 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace RinhaBackend2024.Domain;
 
-[Table("clients", Schema = "public")]
 public class Client
 {
-    private readonly string[] validOperation = ["c", "d"];
 
-    [Key]
-    [Column("id")]
+
     [JsonIgnore]
-    public long Id { get; private set; }
-    [Column("limit")]
-    public long Limit { get; private set; }
-    [Column("balance")]
-    public long Balance { get; private set; }
-    public List<Transaction> Transations { get; private set; } = [];
+    public long Id { get; set; }
+    public long Limit { get; set; }
+
+    public long Balance { get; set; }
+    public List<Transaction> Transactions { get; set; } = [];
 
     public Client(long limit)
     {
@@ -35,10 +29,6 @@ public class Client
 
     public bool CreateTransaction(long value, string type, string description)
     {
-        if (!validOperation.Contains(type.ToLower())) return false;
-        int sizeDescription = description.Trim().Length;
-        if (sizeDescription == 0 || sizeDescription > 10) return false;
-
         if (type == "c")
             return Credit(value, description);
         else
@@ -64,11 +54,6 @@ public class Client
 
     private void AddNewTransaction(long value, string type, string description)
     {
-        Transations.Add(new Transaction(value, type, description));
-    }
-
-    public void SetTransactions(List<Transaction> transations)
-    {
-        Transations = transations;
+        Transactions.Add(new Transaction(value, type, description));
     }
 }
