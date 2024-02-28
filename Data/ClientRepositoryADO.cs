@@ -64,12 +64,20 @@ public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepositor
 
     public async Task UpdateAsync(Client client)
     {
+        bool isCredit = client.Transactions[0].Type.ToLower() == "c";
+        var value = client.Transactions[0].Value;
         using var cmd = _connection.CreateCommand();
-        cmd.CommandText = """UPDATE public.clients SET "balance" = @balance WHERE "id" = @id""";
+        if (isCredit)
+            cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" + @balance WHERE "id" = @id RETURNING  "balance" """;
+        else
+            cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" - @balance WHERE "id" = @id RETURNING  "balance" """;
         cmd.Parameters.AddWithValue("id", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
-        cmd.Parameters.AddWithValue("limit", NpgsqlTypes.NpgsqlDbType.Integer, client.Limit);
-        cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, client.Balance);
-        await cmd.ExecuteNonQueryAsync();
+        cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, value);
+        var result = await cmd.ExecuteScalarAsync();
+        if (result != null)
+        {
+            client.SetBalance(Convert.ToInt64(result));
+        }
 
         foreach (var transaction in client.Transactions) //ignorando casos de update de transacoes
         {

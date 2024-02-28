@@ -72,4 +72,9 @@ public class Client
     {
         Transactions = transations;
     }
+
+    public void SetBalance(long balance)
+    {
+        Balance = balance;
+    }
 }
