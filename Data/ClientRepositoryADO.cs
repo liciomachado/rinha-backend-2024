@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Npgsql;
+﻿using Npgsql;
 using RinhaBackend2024.Domain;
 
 namespace RinhaBackend2024.Data;
@@ -7,22 +6,6 @@ namespace RinhaBackend2024.Data;
 public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepository
 {
     private readonly NpgsqlDataSource _connection = connection;
-    private readonly IMemoryCache _memoryCache;
-
-
-    public async Task<Client> GetAsyncLock(int id)
-    {
-        using var cmd = _connection.CreateCommand();
-        cmd.CommandText = """SELECT id, "limit", balance FROM public.clients WHERE Id = @Id FOR UPDATE""";
-        cmd.Parameters.AddWithValue("Id", id);
-        await using var reader = await cmd.ExecuteReaderAsync();
-        if (reader.Read())
-        {
-            var client = new Client(reader.GetInt64(0), reader.GetInt64(1), reader.GetInt64(2));
-            return client;
-        }
-        return null;
-    }
 
     public async Task<Client> GetAsync(int id)
     {
@@ -30,7 +13,7 @@ public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepositor
         cmd.CommandText = """SELECT id, "limit", balance FROM public.clients WHERE Id = @Id""";
         cmd.Parameters.AddWithValue("Id", id);
         await using var reader = await cmd.ExecuteReaderAsync();
-        if (reader.Read())
+        if (await reader.ReadAsync())
         {
             var client = new Client(reader.GetInt64(0), reader.GetInt64(1), reader.GetInt64(2));
             return client;
@@ -43,7 +26,7 @@ public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepositor
         var client = await GetAsync(id);
         if (client == null) return null;
         var transaction = await GetTransactionsByClientId(id);
-        client.SetTransactions(transaction);
+        client.Transactions = transaction;
         return client;
     }
 
@@ -62,22 +45,26 @@ public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepositor
         return resultados;
     }
 
-    public async Task UpdateAsync(Client client)
+    public async Task<bool> UpdateAsync(Client client, string type)
     {
-        bool isCredit = client.Transactions[0].Type.ToLower() == "c";
+        bool isCredit = type.Equals("c", StringComparison.CurrentCultureIgnoreCase);
         var value = client.Transactions[0].Value;
         using var cmd = _connection.CreateCommand();
         if (isCredit)
             cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" + @balance WHERE "id" = @id RETURNING  "balance" """;
         else
-            cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" - @balance WHERE "id" = @id RETURNING  "balance" """;
+            cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" - @balance WHERE "id" = @id AND ( "limit" + "balance" - @balance) >= 0 RETURNING "balance" """;
+        //cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" - @balance WHERE "id" = @id RETURNING  "balance" """;
         cmd.Parameters.AddWithValue("id", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
         cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, value);
         var result = await cmd.ExecuteScalarAsync();
+
         if (result != null)
         {
-            client.SetBalance(Convert.ToInt64(result));
+            client.Balance = Convert.ToInt64(result);
         }
+        else
+            return false;
 
         foreach (var transaction in client.Transactions) //ignorando casos de update de transacoes
         {
@@ -90,5 +77,7 @@ public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepositor
             var id = await cmd.ExecuteNonQueryAsync();
             transaction.Id = id;
         }
+
+        return true;
     }
 }

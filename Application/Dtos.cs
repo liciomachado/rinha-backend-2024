@@ -9,7 +9,7 @@ public class ClientDataDtoResponse
     public Saldo Saldo { get; set; }
 
     [JsonPropertyName("ultimas_transacoes")]
-    public List<Transaction>? UltimasTransacoes { get; set; }
+    public IEnumerable<Transaction>? UltimasTransacoes { get; set; }
 }
 
 public class Saldo
@@ -29,18 +29,10 @@ public record TransactionDtoRequest(
 
     [property: JsonPropertyName("tipo")] string Type,
 
-    //[Required]
-    //[Length(1, 10)]
     [property: JsonPropertyName("descricao")] string? Description
 );
 
-public class TransactionDtoResponse(long limite, long saldo)
-{
-    [JsonPropertyName("limite")]
-    public long Limite { get; set; } = limite;
-    [JsonPropertyName("saldo")]
-    public long Saldo { get; set; } = saldo;
-}
+public record TransactionDtoResponse(long limite, long saldo);
 
 [JsonSerializable(typeof(Saldo))]
 [JsonSerializable(typeof(TransactionDtoRequest))]

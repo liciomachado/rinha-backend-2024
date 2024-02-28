@@ -4,6 +4,5 @@ public interface IClientRepository
 {
     Task<Client> GetAsync(int id);
     Task<Client> GetWithTransactionAsync(int id);
-
-    Task UpdateAsync(Client client);
+    Task<bool> UpdateAsync(Client client, string type);
 }
