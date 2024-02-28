@@ -54,29 +54,24 @@ public class ClientRepositoryADO(NpgsqlDataSource connection) : IClientRepositor
             cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" + @balance WHERE "id" = @id RETURNING  "balance" """;
         else
             cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" - @balance WHERE "id" = @id AND ( "limit" + "balance" - @balance) >= 0 RETURNING "balance" """;
-        //cmd.CommandText = """UPDATE public.clients SET "balance" = "balance" - @balance WHERE "id" = @id RETURNING  "balance" """;
         cmd.Parameters.AddWithValue("id", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
         cmd.Parameters.AddWithValue("balance", NpgsqlTypes.NpgsqlDbType.Integer, value);
         var result = await cmd.ExecuteScalarAsync();
 
         if (result != null)
-        {
             client.Balance = Convert.ToInt64(result);
-        }
         else
             return false;
 
-        foreach (var transaction in client.Transactions) //ignorando casos de update de transacoes
-        {
-            cmd.CommandText = """INSERT INTO public."transaction" ("value", "type", "description", "realized", "ClientId") VALUES (@value, @type, @description, @realized, @clientId)""";
-            cmd.Parameters.AddWithValue("value", NpgsqlTypes.NpgsqlDbType.Integer, transaction.Value);
-            cmd.Parameters.AddWithValue("type", NpgsqlTypes.NpgsqlDbType.Text, transaction.Type);
-            cmd.Parameters.AddWithValue("description", NpgsqlTypes.NpgsqlDbType.Text, transaction.Description);
-            cmd.Parameters.AddWithValue("realized", NpgsqlTypes.NpgsqlDbType.Timestamp, transaction.Realized);
-            cmd.Parameters.AddWithValue("clientId", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
-            var id = await cmd.ExecuteNonQueryAsync();
-            transaction.Id = id;
-        }
+        var transaction = client.Transactions[0];
+        cmd.CommandText = """INSERT INTO public."transaction" ("value", "type", "description", "realized", "ClientId") VALUES (@value, @type, @description, @realized, @clientId)""";
+        cmd.Parameters.AddWithValue("value", NpgsqlTypes.NpgsqlDbType.Integer, transaction.Value);
+        cmd.Parameters.AddWithValue("type", NpgsqlTypes.NpgsqlDbType.Text, transaction.Type);
+        cmd.Parameters.AddWithValue("description", NpgsqlTypes.NpgsqlDbType.Text, transaction.Description);
+        cmd.Parameters.AddWithValue("realized", NpgsqlTypes.NpgsqlDbType.Timestamp, transaction.Realized);
+        cmd.Parameters.AddWithValue("clientId", NpgsqlTypes.NpgsqlDbType.Integer, client.Id);
+        var id = await cmd.ExecuteNonQueryAsync();
+        transaction.Id = id;
 
         return true;
     }
